@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>مولد كارنيه</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body {
       font-family: "Simplified Arabic", "Tahoma", sans-serif;
@@ -20,7 +21,7 @@
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 320px;
+      width: 350px;
       text-align: center;
     }
     .form-container input {
@@ -43,7 +44,6 @@
       font-size: 16px;
       font-weight: bold;
     }
-
     /* A4 page setup */
     .page {
       display: grid;
@@ -60,7 +60,6 @@
       align-items: center;
       page-break-after: always;
     }
-
     .card {
       width: 8.5cm;
       height: 5.5cm;
@@ -104,11 +103,10 @@
     .signature {
       text-align: center;
       margin-top: 5px;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: bold;
       color: #444;
     }
-
     /* footer */
     .footer {
       margin-top: 30px;
@@ -124,27 +122,20 @@
     .footer a:hover {
       text-decoration: underline;
     }
-
     @page {
       size: A4;
       margin: 0;
     }
     @media print {
-      body * {
-        visibility: hidden;
-      }
-      .print-area, .print-area * {
-        visibility: visible;
-      }
+      body * { visibility: hidden; }
+      .print-area, .print-area * { visibility: visible; }
       .print-area {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
       }
-      .footer {
-        display: none; /* الفوتر مش بيتطبع */
-      }
+      .footer { display: none; }
     }
   </style>
 </head>
@@ -155,6 +146,10 @@
     <input type="text" id="class" placeholder="الصف">
     <input type="file" id="photoInput" accept="image/*">
     <button class="btn" onclick="addCard()">إضافة كارنيه</button>
+    <hr>
+    <input type="file" id="excelInput" accept=".xlsx, .xls">
+    <button class="btn" onclick="addFromExcel()">عمل الكروت من الملف</button>
+    <hr>
     <button class="btn" onclick="window.print()">طباعة الكروت (A4)</button>
   </div>
 
@@ -165,11 +160,7 @@
   </div>
 
   <script>
-    function addCard() {
-      const name = document.getElementById("name").value;
-      const className = document.getElementById("class").value;
-      const photoInput = document.getElementById("photoInput");
-
+    function createCard(name, className, photoUrl = "") {
       let pages = document.querySelectorAll(".page");
       let lastPage = pages[pages.length - 1];
 
@@ -195,19 +186,50 @@
         </div>
       `;
 
-      if (photoInput.files && photoInput.files[0]) {
-        let reader = new FileReader();
-        reader.onload = function(e) {
-          card.querySelector(".photo").style.backgroundImage = `url(${e.target.result})`;
-        };
-        reader.readAsDataURL(photoInput.files[0]);
+      if (photoUrl) {
+        card.querySelector(".photo").style.backgroundImage = `url(${photoUrl})`;
       }
 
       lastPage.appendChild(card);
+    }
+
+    function addCard() {
+      const name = document.getElementById("name").value;
+      const className = document.getElementById("class").value;
+      const photoInput = document.getElementById("photoInput");
+
+      if (photoInput.files && photoInput.files[0]) {
+        let reader = new FileReader();
+        reader.onload = function(e) {
+          createCard(name, className, e.target.result);
+        };
+        reader.readAsDataURL(photoInput.files[0]);
+      } else {
+        createCard(name, className);
+      }
 
       document.getElementById("name").value = "";
       document.getElementById("class").value = "";
       document.getElementById("photoInput").value = "";
+    }
+
+    function addFromExcel() {
+      const file = document.getElementById("excelInput").files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet);
+
+        rows.forEach(row => {
+          createCard(row["الاسم"] || "", row["الصف"] || "");
+        });
+      };
+      reader.readAsArrayBuffer(file);
     }
   </script>
 
