@@ -49,12 +49,12 @@
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       grid-template-rows: repeat(3, auto);
-      gap: 25px 40px; /* مسافة بين الكروت */
+      gap: 25px 40px;
       width: 100%;
-      max-width: 21cm;  /* عرض A4 */
-      height: 29.7cm;   /* طول A4 */
+      max-width: 21cm;
+      height: 29.7cm;
       margin: 0 auto 30px auto;
-      padding: 20mm 15mm; /* حواف من جوه علشان الطباعة */
+      padding: 20mm 15mm;
       box-sizing: border-box;
       justify-items: center;
       align-items: center;
@@ -68,20 +68,23 @@
       border-radius: 10px;
       padding: 10px;
       background: white;
-      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     .card h2 {
       text-align: center;
       color: #004080;
-      margin: 0 0 8px;
-      font-size: 18px;
+      margin: 0 0 6px;
+      font-size: 17px;
       font-weight: bold;
     }
     .content {
       display: flex;
-      justify-content: flex-start;
+      justify-content: space-between;
       align-items: flex-start;
-      gap: 10px;
+      gap: 8px;
+      flex-grow: 1;
     }
     .photo {
       width: 80px;
@@ -94,12 +97,34 @@
       flex: 1;
     }
     .info p {
+      font-size: 16px;
+      margin: 6px 0;
+      font-weight: bold;
+    }
+    .signature {
+      text-align: center;
+      margin-top: 5px;
       font-size: 14px;
-      margin: 5px 0;
-      font-weight: 500;
+      font-weight: bold;
+      color: #444;
     }
 
-    /* إعدادات الطباعة */
+    /* footer */
+    .footer {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #333;
+      text-align: center;
+    }
+    .footer a {
+      color: #004080;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
     @page {
       size: A4;
       margin: 0;
@@ -117,6 +142,9 @@
         left: 0;
         width: 100%;
       }
+      .footer {
+        display: none; /* الفوتر مش بيتطبع */
+      }
     }
   </style>
 </head>
@@ -125,7 +153,6 @@
   <div class="form-container">
     <input type="text" id="name" placeholder="الاسم">
     <input type="text" id="class" placeholder="الصف">
-    <input type="text" id="year" placeholder="العام الدراسي">
     <input type="file" id="photoInput" accept="image/*">
     <button class="btn" onclick="addCard()">إضافة كارنيه</button>
     <button class="btn" onclick="window.print()">طباعة الكروت (A4)</button>
@@ -133,18 +160,19 @@
 
   <div class="print-area" id="printArea"></div>
 
+  <div class="footer">
+    Developed by <a href="https://www.facebook.com/share/1YkbLBSYfE/" target="_blank">Zeyad Ahmed</a>
+  </div>
+
   <script>
     function addCard() {
       const name = document.getElementById("name").value;
       const className = document.getElementById("class").value;
-      const year = document.getElementById("year").value;
       const photoInput = document.getElementById("photoInput");
 
-      // دور على آخر صفحة
       let pages = document.querySelectorAll(".page");
       let lastPage = pages[pages.length - 1];
 
-      // لو مفيش صفحة أو الصفحة مليانة 6 كروت -> اعمل صفحة جديدة
       if (!lastPage || lastPage.children.length >= 6) {
         lastPage = document.createElement("div");
         lastPage.className = "page";
@@ -155,18 +183,18 @@
       card.className = "card";
 
       card.innerHTML = `
-        <h2>معهد مطاي البلد</h2>
+        <h2>معهد مطاى البلد رياض أطفال - ابتدائي</h2>
         <div class="content">
           <div class="info">
             <p>الاسم: <span>${name}</span></p>
             <p>الصف: <span>${className}</span></p>
-            <p>العام الدراسي: <span>${year}</span></p>
+            <p>العام الدراسي: <span>2025 / 2026</span></p>
+            <p class="signature">مع تحياتي إدارة المعهد للتواصل : 01005408091</p>
           </div>
           <div class="photo"></div>
         </div>
       `;
 
-      // لو في صورة تترفع
       if (photoInput.files && photoInput.files[0]) {
         let reader = new FileReader();
         reader.onload = function(e) {
@@ -177,10 +205,8 @@
 
       lastPage.appendChild(card);
 
-      // تفريغ الفورم بعد الإضافة
       document.getElementById("name").value = "";
       document.getElementById("class").value = "";
-      document.getElementById("year").value = "";
       document.getElementById("photoInput").value = "";
     }
   </script>
