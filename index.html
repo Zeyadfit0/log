@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>مولد كارنيه</title>
+  <style>
+    body {
+      font-family: "Simplified Arabic", "Tahoma", sans-serif;
+      background: #f4f6f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .form-container {
+      margin-bottom: 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 320px;
+      text-align: center;
+    }
+    .form-container input {
+      margin: 5px 0;
+      padding: 10px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    .btn {
+      margin-top: 10px;
+      padding: 12px 15px;
+      border: none;
+      border-radius: 6px;
+      background: #004080;
+      color: white;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    /* A4 page setup */
+    .page {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(3, auto);
+      gap: 25px 40px; /* مسافة بين الكروت */
+      width: 100%;
+      max-width: 21cm;  /* عرض A4 */
+      height: 29.7cm;   /* طول A4 */
+      margin: 0 auto 30px auto;
+      padding: 20mm 15mm; /* حواف من جوه علشان الطباعة */
+      box-sizing: border-box;
+      justify-items: center;
+      align-items: center;
+      page-break-after: always;
+    }
+
+    .card {
+      width: 8.5cm;
+      height: 5.5cm;
+      border: 2px solid #004080;
+      border-radius: 10px;
+      padding: 10px;
+      background: white;
+      overflow: hidden;
+    }
+    .card h2 {
+      text-align: center;
+      color: #004080;
+      margin: 0 0 8px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .content {
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .photo {
+      width: 80px;
+      height: 100px;
+      border: 2px solid #004080;
+      background-size: cover;
+      background-position: center;
+    }
+    .info {
+      flex: 1;
+    }
+    .info p {
+      font-size: 14px;
+      margin: 5px 0;
+      font-weight: 500;
+    }
+
+    /* إعدادات الطباعة */
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .print-area, .print-area * {
+        visibility: visible;
+      }
+      .print-area {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-container">
+    <input type="text" id="name" placeholder="الاسم">
+    <input type="text" id="class" placeholder="الصف">
+    <input type="text" id="year" placeholder="العام الدراسي">
+    <input type="file" id="photoInput" accept="image/*">
+    <button class="btn" onclick="addCard()">إضافة كارنيه</button>
+    <button class="btn" onclick="window.print()">طباعة الكروت (A4)</button>
+  </div>
+
+  <div class="print-area" id="printArea"></div>
+
+  <script>
+    function addCard() {
+      const name = document.getElementById("name").value;
+      const className = document.getElementById("class").value;
+      const year = document.getElementById("year").value;
+      const photoInput = document.getElementById("photoInput");
+
+      // دور على آخر صفحة
+      let pages = document.querySelectorAll(".page");
+      let lastPage = pages[pages.length - 1];
+
+      // لو مفيش صفحة أو الصفحة مليانة 6 كروت -> اعمل صفحة جديدة
+      if (!lastPage || lastPage.children.length >= 6) {
+        lastPage = document.createElement("div");
+        lastPage.className = "page";
+        document.getElementById("printArea").appendChild(lastPage);
+      }
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <h2>معهد مطاي البلد</h2>
+        <div class="content">
+          <div class="info">
+            <p>الاسم: <span>${name}</span></p>
+            <p>الصف: <span>${className}</span></p>
+            <p>العام الدراسي: <span>${year}</span></p>
+          </div>
+          <div class="photo"></div>
+        </div>
+      `;
+
+      // لو في صورة تترفع
+      if (photoInput.files && photoInput.files[0]) {
+        let reader = new FileReader();
+        reader.onload = function(e) {
+          card.querySelector(".photo").style.backgroundImage = `url(${e.target.result})`;
+        };
+        reader.readAsDataURL(photoInput.files[0]);
+      }
+
+      lastPage.appendChild(card);
+
+      // تفريغ الفورم بعد الإضافة
+      document.getElementById("name").value = "";
+      document.getElementById("class").value = "";
+      document.getElementById("year").value = "";
+      document.getElementById("photoInput").value = "";
+    }
+  </script>
+
+</body>
+</html>
