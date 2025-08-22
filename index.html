@@ -223,13 +223,17 @@
         const workbook = XLSX.read(data, { type: "array" });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-        const rows = XLSX.utils.sheet_to_json(sheet);
+        const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
         rows.forEach(row => {
-          // يدعم العربي والانجليزي
-          const name = row["الاسم"] || row["Name"] || "";
-          const className = row["الصف"] || row["Class"] || "";
-          createCard(name, className);
+          const name =
+            row["الاسم"] || row["Name"] || row["name"] || row["NAME"] || "";
+          const className =
+            row["الصف"] || row["Class"] || row["class"] || row["CLASS"] || "";
+
+          if (name.trim() !== "") {
+            createCard(name, className);
+          }
         });
       };
       reader.readAsArrayBuffer(file);
