@@ -226,7 +226,10 @@
         const rows = XLSX.utils.sheet_to_json(sheet);
 
         rows.forEach(row => {
-          createCard(row["الاسم"] || "", row["الصف"] || "");
+          // يدعم العربي والانجليزي
+          const name = row["الاسم"] || row["Name"] || "";
+          const className = row["الصف"] || row["Class"] || "";
+          createCard(name, className);
         });
       };
       reader.readAsArrayBuffer(file);
